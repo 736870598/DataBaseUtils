@@ -3,7 +3,6 @@ package com.sunxiaoyu.batabaseutilsdemo.sqlitecore.core;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation.DBField;
 import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation.DBTable;
@@ -32,13 +31,11 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * @throws Exception
      */
     public synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase) throws Exception{
-        Log.v("sxy", "BaseDao init :" + isInit);
         if(!isInit){
             isInit = true;
-            Log.v("sxy", "BaseDao init :" + isInit);
             this.entityClass = entity;
             this.sqLiteDatabase = sqLiteDatabase;
-            sqLiteDatabase.execSQL(getCreateTableStr());
+            this.sqLiteDatabase.execSQL(getCreateTableStr());
         }
     }
 
@@ -49,11 +46,13 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     protected String getCreateTableStr() throws Exception{
 
+        //如果设置了表名，就用设置了的表名，否则表名为类名。
         if (!entityClass.isAnnotationPresent(DBTable.class)) {
-            throw new Exception("类文件还未开启注解，请先注解！！");
+            this.tableName = entityClass.getSimpleName();
+        }else{
+            //得到表名
+            this.tableName = entityClass.getAnnotation(DBTable.class).value();
         }
-        //得到表名
-        this.tableName = entityClass.getAnnotation(DBTable.class).value();
 
         StringBuilder sql = new StringBuilder();
         sql.append("Create TABLE IF NOT EXISTS " + tableName + " ( _id INTEGER PRIMARY KEY autoincrement, ");
@@ -99,6 +98,12 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         if( type.equals(int.class) || type.equals(Integer.class) ){
             return "INTEGER";
         }
+        if( type.equals(float.class) || type.equals(Float.class) ){
+            return "FLOAT";
+        }
+        if( type.equals(double.class) || type.equals(Double.class) ){
+            return "DOUBLE";
+        }
         if( type.equals(Long.class) || type.equals(Double.class) || type.equals(Float.class)){
             return "LONG";
         }
@@ -112,9 +117,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * @throws Exception
      */
     protected ContentValues getContentValues(T entity) throws Exception{
-        if(!entity.getClass().isAnnotationPresent(DBTable.class)){
-            throw new Exception("类文件还未开启注解，请先注解！！");
-        }
 
         ContentValues contentValues = new ContentValues();
         Field[] fields = entity.getClass().getDeclaredFields();
@@ -205,31 +207,33 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         Cursor cursor = null;
         List<T> list = null;
         String sql = "SELECT * FROM " + tableName;
-        try {
-            cursor = quert(sql, null);
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()){
-                try {
-                    T t = cursor2Model(cursor);
-                    if(t != null){
-                        if(list == null)
-                            list = new ArrayList<>();
 
-                        list.add(t);
-                    }
-                }catch (Exception e){
+        cursor = quert(sql, null);
+
+        if(cursor == null){
+            return null;
+        }
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()){
+            try {
+                T t = cursor2Model(cursor);
+                if(t != null){
+                    if(list == null)
+                        list = new ArrayList<>();
+
+                    list.add(t);
                 }
+            }catch (Exception e){
+                continue;
+            }finally {
                 cursor.moveToNext();
             }
-        }catch (Exception e){
-            throw e;
-        }finally {
-            if(cursor != null)
-                cursor.close();
         }
+        cursor.close();
+
         return list;
     }
-
 
     /**
      * 插入 用户可以传入model实现自动插入，也可以重写该方法

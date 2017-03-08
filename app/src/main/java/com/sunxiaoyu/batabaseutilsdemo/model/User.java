@@ -6,7 +6,6 @@ import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation.DBTable;
 /**
  * Created by sunxiaoyu on 2017/1/13.
  */
-@DBTable("user")
 public class User {
     @DBField("name")
     private String name;
