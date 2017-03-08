@@ -27,7 +27,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     private Class<T> entityClass;
     private Map<String, String> cacheMap;
 
-
     /**
      * 初始化
      * @throws Exception
@@ -239,7 +238,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * @throws Exception
      */
     @Override
-    public Long insert(T entity) throws Exception{
+    public synchronized Long insert(T entity) throws Exception{
         return sqLiteDatabase.insert(tableName, "_id", getContentValues(entity));
     }
 
@@ -251,7 +250,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * @throws Exception
      */
     @Override
-    public int update(T entity, T where) throws Exception {
+    public synchronized int update(T entity, T where) throws Exception {
         Condition condition = new Condition(getContentValues(where));
         return sqLiteDatabase.update(tableName, getContentValues(entity), condition.whereClause, condition.whereArgs);
     }
@@ -263,7 +262,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * @throws Exception
      */
     @Override
-    public int delete(T where) throws Exception {
+    public synchronized int delete(T where) throws Exception {
         Condition condition = new Condition(getContentValues(where));
         return sqLiteDatabase.delete(tableName, condition.whereClause, condition.whereArgs);
     }
