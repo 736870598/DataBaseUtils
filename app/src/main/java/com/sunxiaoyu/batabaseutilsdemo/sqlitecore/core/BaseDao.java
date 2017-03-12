@@ -20,16 +20,16 @@ import java.util.Map;
  */
 public abstract class BaseDao<T> implements IBaseDao<T> {
 
-    protected SQLiteDatabase sqLiteDatabase;
-    private boolean isInit;
-    protected String tableName;
-    private Class<T> entityClass;
-    private Map<String, String> cacheMap;
+        protected SQLiteDatabase sqLiteDatabase;
+        private boolean isInit;
+        protected String tableName;
+        private Class<T> entityClass;
+        private Map<String, String> cacheMap;
 
-    /**
-     * 初始化
-     * @throws Exception
-     */
+        /**
+         * 初始化
+         * @throws Exception
+         */
     public synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase) throws Exception{
         if(!isInit){
             isInit = true;
