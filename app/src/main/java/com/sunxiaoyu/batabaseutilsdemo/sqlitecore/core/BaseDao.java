@@ -50,7 +50,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         if (!entityClass.isAnnotationPresent(DBTable.class)) {
             this.tableName = entityClass.getSimpleName();
         }else{
-            //得到表名
+            //得到表名sdsd
             this.tableName = entityClass.getAnnotation(DBTable.class).value();
         }
 
