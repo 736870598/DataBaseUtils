@@ -1,13 +1,17 @@
 package com.sunxiaoyu.batabaseutilsdemo.model;
 
-import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation.DBField;
-import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation.DBTable;
+
+import com.sxy.databasecore.annotation.DBField;
+import com.sxy.databasecore.annotation.DBTable;
+
+import java.io.Serializable;
 
 /**
  * Created by sunxiaoyu on 2017/1/13.
  */
 @DBTable("user")
-public class User {
+public class User implements Serializable{
+
     @DBField("name")
     private String name;
     @DBField("password")

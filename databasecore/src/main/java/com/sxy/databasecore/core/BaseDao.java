@@ -1,12 +1,12 @@
-package com.sunxiaoyu.batabaseutilsdemo.sqlitecore.core;
+package com.sxy.databasecore.core;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
-import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation.DBField;
-import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation.DBTable;
+
+import com.sxy.databasecore.annotation.DBField;
+import com.sxy.databasecore.annotation.DBTable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -21,25 +21,30 @@ import java.util.Map;
  */
 public abstract class BaseDao<T> implements IBaseDao<T> {
 
-    protected SQLiteDatabase sqLiteDatabase;
+    private SQLiteDatabase sqLiteDatabase;
     private boolean isInit;
-    protected String tableName;
+    private String tableName;
     private Class<T> entityClass;
     private Map<String, String> cacheMap;
 
+    public SQLiteDatabase getSqLiteDatabase() {
+        return sqLiteDatabase;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
 
     /**
      * 初始化
-     * @throws Exception
+     * @throws Exception 异常
      */
-    public synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase) throws Exception{
-        Log.v("sxy", "BaseDao init :" + isInit);
+    public synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase, String tableName) throws Exception{
         if(!isInit){
             isInit = true;
-            Log.v("sxy", "BaseDao init :" + isInit);
             this.entityClass = entity;
             this.sqLiteDatabase = sqLiteDatabase;
-            sqLiteDatabase.execSQL(getCreateTableStr());
+            sqLiteDatabase.execSQL(getCreateTableStr(tableName));
         }
     }
 
@@ -48,35 +53,31 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 根据注解获取表名及列名
      * @throws Exception
      */
-    protected String getCreateTableStr() throws Exception{
+    private String getCreateTableStr(String _tableName) throws Exception{
 
-        if (!entityClass.isAnnotationPresent(DBTable.class)) {
-            throw new Exception("类文件还未开启注解，请先注解！！");
-        }
         //得到表名
-        this.tableName = entityClass.getAnnotation(DBTable.class).value();
+        if (_tableName.isEmpty()){
+            this.tableName = entityClass.getAnnotation(DBTable.class).value();
+        }else {
+            this.tableName = _tableName;
+        }
 
         StringBuilder sql = new StringBuilder();
-        sql.append("Create TABLE IF NOT EXISTS " + tableName + " ( _id INTEGER PRIMARY KEY autoincrement, ");
+        sql.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append(" ( _id INTEGER PRIMARY KEY AUTOINCREMENT");
 
         Field[] fields = entityClass.getDeclaredFields();
         int length = fields.length;
         for (int i = 0; i < length; i++) {
 
             Field field = fields[i];
-            String lineName;
 
-            //如果设置了列名，就用设置了的列名，否则列名为属性名。
-            if (field.isAnnotationPresent(DBField.class)) {
-                lineName = field.getAnnotation(DBField.class).value();
-            }else{
-                lineName = field.getName();
+            //如果没有设置DBField，直接跳过
+            if (!field.isAnnotationPresent(DBField.class)) {
+                continue;
             }
 
-            sql.append( lineName + " " + getSqlLiteDBType(field.getType()) );
-            if( i < length - 1 ){
-                sql.append(" , ");
-            }
+            String lineName = field.getAnnotation(DBField.class).value();
+            sql.append(" , ").append(lineName).append(" ").append(getSqlLiteDBType(field.getType()));
 
             //将属性名 和 表列名对应关系保存在cacheMap中。
             if(cacheMap == null){
@@ -93,15 +94,24 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * @param type  属性的类型
      * @return
      */
-    protected String getSqlLiteDBType(Class<?> type){
+    private String getSqlLiteDBType(Class<?> type){
         if( type.equals(String.class) ){
             return "TEXT";
         }
         if( type.equals(int.class) || type.equals(Integer.class) ){
             return "INTEGER";
         }
-        if( type.equals(Long.class) || type.equals(Double.class) || type.equals(Float.class)){
-            return "LONG";
+        if( type.equals(long.class) || type.equals(Long.class) ){
+            return "INTEGER";
+        }
+        if( type.equals(float.class) || type.equals(Float.class) ){
+            return "FLOAT";
+        }
+        if( type.equals(double.class) || type.equals(Double.class) ){
+            return "DOUBLE";
+        }
+        if( type.equals(boolean.class) || type.equals(Boolean.class) ){
+            return "BOOLEAN";
         }
         return "TEXT";
     }
@@ -110,26 +120,22 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     /**
      * 通过 T 返回ContentValues，用于操作表是使用
      * @param entity  model
-     * @throws Exception
+     * @throws Exception 异常
      */
-    protected ContentValues getContentValues(T entity) throws Exception{
-        if(!entity.getClass().isAnnotationPresent(DBTable.class)){
-            throw new Exception("类文件还未开启注解，请先注解！！");
-        }
-
+    private ContentValues getContentValues(T entity) throws Exception{
         ContentValues contentValues = new ContentValues();
         Field[] fields = entity.getClass().getDeclaredFields();
         for (Field filed : fields) {
             filed.setAccessible(true);
-            String key = cacheMap.get(filed.getName());
-            if(key == null){
-                continue;
-            }
             Object value = filed.get(entity);
             if(value == null){
                 continue;
             }
-            contentValues.put(cacheMap.get(filed.getName()), value.toString());
+            String key = cacheMap.get(filed.getName());
+            if(key == null){
+                continue;
+            }
+            contentValues.put(key, value.toString());
         }
 
         return contentValues;
@@ -140,7 +146,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     /**
      *  通过contentValues得到条件语句和条件参数
      */
-    class Condition{
+    private class Condition{
         String whereClause;
         String[] whereArgs;
 
@@ -169,11 +175,11 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
 
     /**
      * 通过cursor返回model类
-     * @throws Exception
+     * @throws Exception 异常
      */
-    protected <T> T cursor2Model(Cursor curosr) throws Exception {
+    public T cursor2Model(Cursor curosr) throws Exception {
 
-        T model = (T) entityClass.newInstance();
+        T model = entityClass.newInstance();
         Field[] fields = entityClass.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
@@ -200,7 +206,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     /**
      * 搜索表中所有字段
      * @return List
-     * @throws Exception
+     * @throws Exception 异常
      */
     public List<T> getAllInfo() throws Exception{
         Cursor cursor = null;
@@ -219,6 +225,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
                         list.add(t);
                     }
                 }catch (Exception e){
+                    e.printStackTrace();
                 }
                 cursor.moveToNext();
             }
@@ -235,8 +242,8 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     /**
      * 插入 用户可以传入model实现自动插入，也可以重写该方法
      * @param entity  model
-     * @return
-     * @throws Exception
+     * @return  插入状态
+     * @throws Exception 异常
      */
     @Override
     public Long insert(T entity) throws Exception{
@@ -247,8 +254,8 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 修改， 传入entity 和 where 将where的值修改为entity的值。
      * @param entity    目标model
      * @param where     修改的model（可以只写个别属性，作为修改时的查询条件）（注：int类型默认为0，使用Integer）
-     * @return
-     * @throws Exception
+     * @return 修改状态
+     * @throws Exception 异常
      */
     @Override
     public int update(T entity, T where) throws Exception {
@@ -259,8 +266,8 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     /**
      * 删除
      * @param where  删除的model  （可以只写个别属性，作为删除时的查询条件）（注：int类型默认为0，使用Integer）
-     * @return
-     * @throws Exception
+     * @return 删除状态
+     * @throws Exception 异常
      */
     @Override
     public int delete(T where) throws Exception {
@@ -269,11 +276,11 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     }
 
     /**
-     * 查找    （由于查找的房子及要求的返回值各有不同，这里提供一个简单的查找方法，可以通过getAllInfo()方法查找表所有的字段）
+     * 查找    （由于查找的要求及返回值各有不同，这里提供一个简单的查找方法，可以通过getAllInfo()方法查找表所有的字段）
      * @param sql   查找语句
      * @param args  查找值
      * @return  Cursor（使用完记得close）
-     * @throws Exception
+     * @throws Exception 异常
      */
     @Override
     public Cursor quert(String sql, String[] args) throws Exception {

@@ -1,4 +1,4 @@
-package com.sunxiaoyu.batabaseutilsdemo.sqlitecore.core;
+package com.sxy.databasecore.core;
 
 import android.database.Cursor;
 

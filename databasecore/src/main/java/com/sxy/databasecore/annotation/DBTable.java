@@ -1,4 +1,4 @@
-package com.sunxiaoyu.batabaseutilsdemo.sqlitecore.annotation;
+package com.sxy.databasecore.annotation;
 
 
 import java.lang.annotation.ElementType;

@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BataBaseUtilsDemo.iml" filepath="$PROJECT_DIR$/BataBaseUtilsDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DataBaseUtils.iml" filepath="$PROJECT_DIR$/DataBaseUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/databasecore/databasecore.iml" filepath="$PROJECT_DIR$/databasecore/databasecore.iml" />
     </modules>
   </component>
 </project>

@@ -1,6 +1,7 @@
 package com.sunxiaoyu.batabaseutilsdemo.dao;
 
-import com.sunxiaoyu.batabaseutilsdemo.sqlitecore.core.BaseDao;
+
+import com.sxy.databasecore.core.BaseDao;
 
 /**
  * Created by sunxiaoyu on 2017/1/13.
