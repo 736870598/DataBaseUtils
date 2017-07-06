@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-
 import com.sxy.databasecore.annotation.DBField;
 import com.sxy.databasecore.annotation.DBTable;
 
@@ -98,10 +97,19 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         if( type.equals(String.class) ){
             return "TEXT";
         }
+        if( type.equals(char.class) ){
+            return "CHAR";
+        }
+        if( type.equals(byte.class) || type.equals(Byte.class) ){
+            return "BLOB";
+        }
         if( type.equals(int.class) || type.equals(Integer.class) ){
             return "INTEGER";
         }
         if( type.equals(long.class) || type.equals(Long.class) ){
+            return "INTEGER";
+        }
+        if( type.equals(short.class) || type.equals(Short.class) ){
             return "INTEGER";
         }
         if( type.equals(float.class) || type.equals(Float.class) ){
@@ -110,12 +118,8 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         if( type.equals(double.class) || type.equals(Double.class) ){
             return "DOUBLE";
         }
-        if( type.equals(boolean.class) || type.equals(Boolean.class) ){
-            return "BOOLEAN";
-        }
         return "TEXT";
     }
-
 
     /**
      * 通过 T 返回ContentValues，用于操作表是使用
@@ -189,15 +193,18 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
 
             if (type.equals(String.class)) {
                 field.set(model, curosr.getString(columnIndex));
+            }else if( type.equals(boolean.class) || type.equals(Boolean.class) ){
+                field.set(model, curosr.getString(columnIndex).equalsIgnoreCase("true"));
             }else if( type.equals(int.class) || type.equals(Integer.class) ){
                 field.set(model, curosr.getInt(columnIndex));
+            }else if( type.equals(long.class) || type.equals(Long.class) ){
+                field.set(model, curosr.getLong(columnIndex));
             }else if( type.equals(float.class) || type.equals(Float.class) ){
                 field.set(model, curosr.getFloat(columnIndex));
-            }
-            else if( type.equals(double.class) || type.equals(Double.class) ){
-                field.set(model, curosr.getFloat(columnIndex));
+            }else if( type.equals(double.class) || type.equals(Double.class) ){
+                field.set(model, curosr.getDouble(columnIndex));
             }else if( type.equals(short.class) || type.equals(Short.class) ){
-                field.set(model, curosr.getFloat(columnIndex));
+                field.set(model, curosr.getShort(columnIndex));
             }
         }
         return model;
@@ -285,5 +292,16 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     @Override
     public Cursor quert(String sql, String[] args) throws Exception {
         return sqLiteDatabase.rawQuery(sql, args);
+    }
+
+
+    @Override
+    public Boolean exist(T where) throws Exception {
+        Condition condition = new Condition(getContentValues(where));
+        Cursor cursor = sqLiteDatabase.query(tableName, null, condition.whereClause, condition.whereArgs, null, null, null);
+        Boolean exist = ( cursor != null && cursor.getCount() > 0 );
+        if (cursor != null)
+            cursor.close();
+        return exist;
     }
 }

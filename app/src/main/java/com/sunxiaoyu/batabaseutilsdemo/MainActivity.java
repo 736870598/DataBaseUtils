@@ -20,23 +20,23 @@ public class MainActivity extends Activity {
             String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sxysxysxy";
             String name = "sssxxxyyy.db";
 
-            UserDao userDao = DaoManagerFactory.getInstance(path, name).getDataHelper(UserDao.class, User.class, "asda");
+            UserDao userDao = DaoManagerFactory.getInstance(path, name).getDataHelper(UserDao.class, User.class);
 
             User p = new User();
-            p.setName("updata找三找三");
-            p.setPassWord(123321123);
+            p.setName("孙晓宇");
+            p.setPassWord(123456);
+            p.setGrend(98.6f);
+            p.setFlag(true);
+
+            User updateU = new User();
+            updateU.setName("孙晓宇");
+            updateU.setGrend(80.3f);
+            updateU.setFlag(false);
 
 
-            userDao.delete(p);
+            userDao.update(updateU, p);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-
-
-
-
-
     }
 }
