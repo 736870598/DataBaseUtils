@@ -71,7 +71,7 @@ public class DaoManagerFactory {
      * @throws Exception
      */
     public  <T extends BaseDao<M>, M> T getDataHelper(Class<T> clazz, Class<M> entityClazz) throws Exception{
-        return getDataHelper(clazz, entityClazz, "");
+        return getDataHelper(clazz, entityClazz, null);
     }
 
     public synchronized <T extends BaseDao<M>, M> T getDataHelper(Class<T> clazz, Class<M> entityClazz, String tableName) throws Exception{

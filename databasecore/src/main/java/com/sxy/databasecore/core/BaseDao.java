@@ -4,8 +4,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.sxy.databasecore.annotation.DBField;
-import com.sxy.databasecore.annotation.DBTable;
+import com.sxy.databasecore.annotation.SxyDBField;
+import com.sxy.databasecore.annotation.SxyDBTable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -55,8 +55,8 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     private String getCreateTableStr(String _tableName) throws Exception{
 
         //得到表名
-        if (_tableName.isEmpty()){
-            this.tableName = entityClass.getAnnotation(DBTable.class).value();
+        if (_tableName == null || _tableName.isEmpty()){
+            this.tableName = entityClass.getAnnotation(SxyDBTable.class).value();
         }else {
             this.tableName = _tableName;
         }
@@ -71,11 +71,11 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
             Field field = fields[i];
 
             //如果没有设置DBField，直接跳过
-            if (!field.isAnnotationPresent(DBField.class)) {
+            if (!field.isAnnotationPresent(SxyDBField.class)) {
                 continue;
             }
 
-            String lineName = field.getAnnotation(DBField.class).value();
+            String lineName = field.getAnnotation(SxyDBField.class).value();
             sql.append(" , ").append(lineName).append(" ").append(getSqlLiteDBType(field.getType()));
 
             //将属性名 和 表列名对应关系保存在cacheMap中。
@@ -254,7 +254,18 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public Long insert(T entity) throws Exception{
-        return sqLiteDatabase.insert(tableName, "_id", getContentValues(entity));
+        synchronized (tableName){
+            try {
+                sqLiteDatabase.beginTransaction();
+                Long result = sqLiteDatabase.insert(tableName, "_id", getContentValues(entity));
+                sqLiteDatabase.setTransactionSuccessful();
+                return result;
+            }catch (Exception e){
+                throw e;
+            }finally {
+                sqLiteDatabase.endTransaction();
+            }
+        }
     }
 
     /**
@@ -266,8 +277,19 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public int update(T entity, T where) throws Exception {
-        Condition condition = new Condition(getContentValues(where));
-        return sqLiteDatabase.update(tableName, getContentValues(entity), condition.whereClause, condition.whereArgs);
+        synchronized (tableName){
+            try{
+                sqLiteDatabase.beginTransaction();
+                Condition condition = new Condition(getContentValues(where));
+                int result = sqLiteDatabase.update(tableName, getContentValues(entity), condition.whereClause, condition.whereArgs);
+                sqLiteDatabase.setTransactionSuccessful();
+                return result;
+            }catch (Exception e){
+                throw e;
+            }finally {
+                sqLiteDatabase.endTransaction();
+            }
+        }
     }
 
     /**
@@ -278,8 +300,19 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public int delete(T where) throws Exception {
-        Condition condition = new Condition(getContentValues(where));
-        return sqLiteDatabase.delete(tableName, condition.whereClause, condition.whereArgs);
+        synchronized (tableName){
+            try{
+                sqLiteDatabase.beginTransaction();
+                Condition condition = new Condition(getContentValues(where));
+                int result = sqLiteDatabase.delete(tableName, condition.whereClause, condition.whereArgs);
+                sqLiteDatabase.setTransactionSuccessful();
+                return result;
+            }catch (Exception e){
+                throw e;
+            }finally {
+                sqLiteDatabase.endTransaction();
+            }
+        }
     }
 
     /**
@@ -295,6 +328,9 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     }
 
 
+    /**
+     * 判断该信息是否已经存在
+     */
     @Override
     public Boolean exist(T where) throws Exception {
         Condition condition = new Condition(getContentValues(where));

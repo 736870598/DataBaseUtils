@@ -1,28 +1,26 @@
 package com.sunxiaoyu.batabaseutilsdemo.model;
 
 
-import android.util.Log;
-
-import com.sxy.databasecore.annotation.DBField;
-import com.sxy.databasecore.annotation.DBTable;
+import com.sxy.databasecore.annotation.SxyDBField;
+import com.sxy.databasecore.annotation.SxyDBTable;
 
 import java.io.Serializable;
 
 /**
  * Created by sunxiaoyu on 2017/1/13.
  */
-@DBTable("myuser")
+@SxyDBTable("myuser")
 public class User implements Serializable{
 
-    @DBField("name")
+    @SxyDBField("name")
     private String name;
-    @DBField("password")
+    @SxyDBField("password")
     private Integer passWord;
-    @DBField("flag")
+    @SxyDBField("flag")
     private Boolean flag;
-    @DBField("temp")
+    @SxyDBField("temp")
     private Long temp;
-    @DBField("grend")
+    @SxyDBField("grend")
     private float grend;
 
     private String other;
