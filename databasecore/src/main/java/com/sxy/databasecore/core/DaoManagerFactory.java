@@ -23,13 +23,13 @@ public class DaoManagerFactory {
     }
 
 
-    public static DaoManagerFactory getInstance(String dbPath, String dbName){
+    public static DaoManagerFactory getFactory(String dbPath, String dbName){
         DaoManagerFactory.dbPath = dbPath;
         DaoManagerFactory.dbName = dbName;
         return DaoManagerFactoryHolder.instance;
     }
 
-    public static DaoManagerFactory getInstance(){
+    public static DaoManagerFactory getFactory(){
         return DaoManagerFactoryHolder.instance;
     }
 

@@ -2,11 +2,11 @@
 DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创建表，一行代码进行增删改查功能。
 
 
-###使用：
+### 使用：
 
-####配置：
+#### 配置：
 
-1.将SxyDataBaseHelpter_1.0.1.aar导入项目lib 文件夹。
+1.将SxyDataBaseHelpter_version.aar导入项目lib 文件夹。
 
 2.在项目Module 下的build.gradle 的根标签中添加以下内容：
 
@@ -18,9 +18,9 @@ DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创�
 
 3.在项目Module 下的build.gradle 的dependencies 标签中添加以下内容：
 
-    compile(name: 'SxyDataBaseHelpter_1.0.1', ext: 'aar')
+    compile(name: 'SxyDataBaseHelpter_version', ext: 'aar')
     
-####代码：
+#### 代码：
  
      DaoManagerFactory factory = DaoManagerFactory.getInstance(path, name);
      //方法一
@@ -29,7 +29,7 @@ DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创�
      UserDao userDao = factory.getDataHelper(UserDao.class, User.class, tableName);  
           
  
-#####其中:
+##### 其中:
 
 path 为自定义数据库保存路径
 
@@ -45,6 +45,15 @@ User 为用户的表结构类（user中的属性只支持基本属性及String, 
             @SxyDBField("password")
             private Integer passWord;
         }
+    或(kotlin方式)
+        @SxyDBTable("myuser")
+        data class User(
+                @SxyDBField("name") var name : String? = null,
+                @SxyDBField("password") var passWord : Int? = null,
+                @SxyDBField("grend") var grend : Float? = null,
+                @SxyDBField("flag") var flag : Boolean? = null
+        ) : Serializable
+            
     //注：        
     //@SxyDBTable  默认表名，如果获取dao的时候传入了表名，这改属性失效
     //@SxyDBField  表字段名
@@ -120,6 +129,13 @@ BaseDao中提供了基本的增、删、改、查、及一些常用的方法，�
         T cursor2Model(Cursor curosr) throws Exception;
     
     }
+    
+    
+#### 版本信息：
+
+1.0.1 基本版本
+
+1.0.2 增加了支持kotlin
    
 
     

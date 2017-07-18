@@ -30,7 +30,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 初始化
      * @throws Exception 异常
      */
-    public synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase, String tableName) throws Exception{
+    synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase, String tableName) throws Exception{
         if(!isInit){
             isInit = true;
             this.entityClass = entity;
@@ -42,7 +42,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     /**
      * 得到创建表的语句
      * 根据注解获取表名及列名
-     * @throws Exception
      */
     private String getCreateTableStr(String _tableName) throws Exception{
 
@@ -53,37 +52,39 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
             this.tableName = _tableName;
         }
 
-        StringBuilder sql = new StringBuilder();
-        sql.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append(" ( _id INTEGER PRIMARY KEY AUTOINCREMENT");
+        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS ")
+                .append(tableName).append(" ( _id INTEGER PRIMARY KEY AUTOINCREMENT");
 
         Field[] fields = entityClass.getDeclaredFields();
-        int length = fields.length;
-        for (int i = 0; i < length; i++) {
+        if (fields != null){
+            for (Field field : fields) {
+                //如果field不是创建的，直接跳过
+                if(field.isSynthetic()){
+                    continue;
+                }
 
-            Field field = fields[i];
+                //如果没有设置DBField，直接跳过
+                if (!field.isAnnotationPresent(SxyDBField.class)) {
+                    continue;
+                }
 
-            //如果没有设置DBField，直接跳过
-            if (!field.isAnnotationPresent(SxyDBField.class)) {
-                continue;
+                String lineName = field.getAnnotation(SxyDBField.class).value();
+                sql.append(" , ").append(lineName).append(" ").append(getSqlLiteDBType(field.getType()));
+
+                //将属性名 和 表列名对应关系保存在cacheMap中。
+                if(cacheMap == null){
+                    cacheMap = new HashMap<>();
+                }
+                cacheMap.put(field.getName(), lineName);
             }
-
-            String lineName = field.getAnnotation(SxyDBField.class).value();
-            sql.append(" , ").append(lineName).append(" ").append(getSqlLiteDBType(field.getType()));
-
-            //将属性名 和 表列名对应关系保存在cacheMap中。
-            if(cacheMap == null){
-                cacheMap = new HashMap<>();
-            }
-            cacheMap.put(field.getName(), lineName);
         }
-        sql.append(" ) ");
-        return sql.toString();
+
+        return sql.append(" ) ").toString();
     }
 
     /**
      * 根据属性的类型返回表字段类型
      * @param type  属性的类型
-     * @return
      */
     private String getSqlLiteDBType(Class<?> type){
         if( type.equals(String.class) ){
@@ -237,13 +238,11 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
                 }
                 cursor.moveToNext();
             }
-        }catch (Exception e){
-            throw e;
+            return list;
         }finally {
             if(cursor != null)
                 cursor.close();
         }
-        return list;
     }
 
     /**
@@ -254,14 +253,12 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public Long insert(T entity) throws Exception{
-        synchronized (tableName){
+        synchronized(this){
             try {
                 sqLiteDatabase.beginTransaction();
                 Long result = sqLiteDatabase.insert(tableName, "_id", getContentValues(entity));
                 sqLiteDatabase.setTransactionSuccessful();
                 return result;
-            }catch (Exception e){
-                throw e;
             }finally {
                 sqLiteDatabase.endTransaction();
             }
@@ -277,15 +274,13 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public int update(T entity, T where) throws Exception {
-        synchronized (tableName){
+        synchronized(this){
             try{
                 sqLiteDatabase.beginTransaction();
                 Condition condition = new Condition(getContentValues(where));
                 int result = sqLiteDatabase.update(tableName, getContentValues(entity), condition.whereClause, condition.whereArgs);
                 sqLiteDatabase.setTransactionSuccessful();
                 return result;
-            }catch (Exception e){
-                throw e;
             }finally {
                 sqLiteDatabase.endTransaction();
             }
@@ -300,15 +295,33 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public int delete(T where) throws Exception {
-        synchronized (tableName){
+        synchronized(this){
             try{
                 sqLiteDatabase.beginTransaction();
                 Condition condition = new Condition(getContentValues(where));
                 int result = sqLiteDatabase.delete(tableName, condition.whereClause, condition.whereArgs);
                 sqLiteDatabase.setTransactionSuccessful();
                 return result;
-            }catch (Exception e){
-                throw e;
+            }finally {
+                sqLiteDatabase.endTransaction();
+            }
+        }
+    }
+
+    /**
+     * 执行
+     */
+    @Override
+    public void execSQL(String sqlStrin) throws Exception{
+        synchronized(this){
+            if (sqlStrin == null || sqlStrin.isEmpty()){
+                return;
+            }
+
+            try{
+                sqLiteDatabase.beginTransaction();
+                sqLiteDatabase.execSQL(sqlStrin);
+                sqLiteDatabase.setTransactionSuccessful();
             }finally {
                 sqLiteDatabase.endTransaction();
             }
@@ -326,29 +339,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     public Cursor quert(String sql, String[] args) throws Exception {
         return sqLiteDatabase.rawQuery(sql, args);
     }
-
-    /**
-     * 执行
-     */
-    @Override
-    public void execSQL(String sqlStrin) throws Exception{
-        if (sqlStrin == null || sqlStrin.isEmpty()){
-            return;
-        }
-
-        synchronized (tableName){
-            try{
-                sqLiteDatabase.beginTransaction();
-                sqLiteDatabase.execSQL(sqlStrin);
-                sqLiteDatabase.setTransactionSuccessful();
-            }catch (Exception e){
-                throw e;
-            }finally {
-                sqLiteDatabase.endTransaction();
-            }
-        }
-    }
-
 
     /**
      * 判断该信息是否已经存在
