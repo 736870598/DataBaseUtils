@@ -23,16 +23,16 @@ public class MainActivity extends Activity {
             UserDao userDao = DaoManagerFactory.getInstance(path, name).getDataHelper(UserDao.class, User.class);
 
             User p = new User();
-            p.setName("孙晓宇");
+            p.setName("孙晓宇111111");
             p.setPassWord(123456);
             p.setGrend(98.6f);
             p.setFlag(true);
+            userDao.insert(p);
 
             User updateU = new User();
-            updateU.setName("孙晓宇");
+            updateU.setName("孙晓宇111111");
             updateU.setGrend(990.3f);
             updateU.setFlag(false);
-
 
             userDao.update(updateU, p);
         } catch (Exception e) {
