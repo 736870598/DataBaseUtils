@@ -2,9 +2,9 @@
 DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创建表，一行代码进行增删改查功能。
 
 
-###使用：
+### 使用：
 
-####配置：
+#### 配置：
 
 1.将SxyDataBaseHelpter_1.0.1.aar导入项目lib 文件夹。
 
@@ -20,7 +20,7 @@ DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创�
 
     compile(name: 'SxyDataBaseHelpter_1.0.1', ext: 'aar')
     
-####代码：
+#### 代码：
  
      DaoManagerFactory factory = DaoManagerFactory.getInstance(path, name);
      //方法一
@@ -29,7 +29,7 @@ DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创�
      UserDao userDao = factory.getDataHelper(UserDao.class, User.class, tableName);  
           
  
-#####其中:
+##### 其中：
 
 path 为自定义数据库保存路径
 
