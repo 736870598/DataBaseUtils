@@ -1,11 +1,12 @@
 package com.sunxiaoyu.batabaseutilsdemo.activity
 
+import android.Manifest
 import android.os.Bundle
 import com.sunxiaoyu.batabaseutilsdemo.R
-import com.sunxiaoyu.batabaseutilsdemo.application.App
 import com.sunxiaoyu.batabaseutilsdemo.dao.VersionDao
 import com.sunxiaoyu.batabaseutilsdemo.retrofitcore.RetrofitRequest
-import com.sxy.databasecore.core.DaoManagerFactory
+import com.sxy.kotlinutilsdemo.utils.PermissionsManager
+import com.sxy.kotlinutilsdemo.utils.ToastUtils
 import com.sxy.retrofitrxjavakotlindemo.resultmodel.VersionModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -17,6 +18,12 @@ import org.jetbrains.anko.sdk25.coroutines.onClick
  * Created by sunxiaoyu on 2017/7/18.
  */
 class HomeActivity : BaseActivity(){
+
+    override fun interceptOnCreate(savedInstanceState: Bundle?): Boolean {
+        PermissionsManager.getManager().requestPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        return super.interceptOnCreate(savedInstanceState)
+    }
+
     override fun bindViewId(): Int {
         return R.layout.activity_main
     }
@@ -40,6 +47,7 @@ class HomeActivity : BaseActivity(){
                         {
                             resultTV.text = it.toString() },
                         {
+                            ToastUtils.showToast(it.message)
                             resultTV.text = it.message } )
 
         managerDisposable(disposable)

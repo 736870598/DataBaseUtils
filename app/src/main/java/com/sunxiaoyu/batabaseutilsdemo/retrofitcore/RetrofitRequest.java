@@ -1,7 +1,9 @@
 package com.sunxiaoyu.batabaseutilsdemo.retrofitcore;
 
 
+import com.sunxiaoyu.batabaseutilsdemo.application.App;
 import com.sunxiaoyu.batabaseutilsdemo.request.RequestImpl;
+import com.sxy.kotlinutilsdemo.utils.NetWorkUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +57,10 @@ public class RetrofitRequest {
     }
 
     public RequestImpl requestImpl() {
+        if (!NetWorkUtils.INSTANCE.isnetWorkAvailable(App.Companion.getInstance())){
+            throw new RuntimeException("------------");
+        }
         return requestImpl;
+
     }
 }

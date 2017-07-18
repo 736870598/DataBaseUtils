@@ -38,7 +38,6 @@ public class GsonConverterFactory extends Converter.Factory{
     }
 
 
-
     private class GsonResponseBodyConverter<T> implements Converter<ResponseBody, T> {
         private final Gson gson;
         private final Type type;

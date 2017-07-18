@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import com.sunxiaoyu.batabaseutilsdemo.application.App
-import com.sunxiaoyu.batabaseutilsdemo.utils.RxLifeManager
+import com.sunxiaoyu.batabaseutilsdemo.manager.RxLifeManager
 import com.sxy.kotlinutilsdemo.utils.ActLifeManager
 import io.reactivex.disposables.Disposable
 
