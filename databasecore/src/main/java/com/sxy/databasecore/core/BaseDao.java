@@ -26,14 +26,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     private Class<T> entityClass;
     private Map<String, String> cacheMap;
 
-    public SQLiteDatabase getSqLiteDatabase() {
-        return sqLiteDatabase;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
     /**
      * 初始化
      * @throws Exception 异常
@@ -157,16 +149,14 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         Condition(ContentValues contentValues){
             Iterator iterator = contentValues.keySet().iterator();
 
-            StringBuilder stringBuilder = new StringBuilder("1=1");
+            StringBuilder stringBuilder = new StringBuilder(" 1=1 ");
             List<String> list = new ArrayList<>();
 
             while (iterator.hasNext()){
                 String key = (String) iterator.next();
                 String value = contentValues.getAsString(key);
                 if(value != null && !value.isEmpty()){
-                    stringBuilder.append(" and ");
-                    stringBuilder.append(key);
-                    stringBuilder.append("=?");
+                    stringBuilder.append(" and ").append(key).append(" =? ");
                     list.add(value);
                 }
             }
@@ -176,11 +166,21 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         }
     }
 
+    @Override
+    public SQLiteDatabase getSqLiteDatabase() {
+        return sqLiteDatabase;
+    }
+
+    @Override
+    public String getTableName() {
+        return tableName;
+    }
 
     /**
      * 通过cursor返回model类
      * @throws Exception 异常
      */
+    @Override
     public T cursor2Model(Cursor curosr) throws Exception {
 
         T model = entityClass.newInstance();
@@ -215,6 +215,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * @return List
      * @throws Exception 异常
      */
+    @Override
     public List<T> getAllInfo() throws Exception{
         Cursor cursor = null;
         List<T> list = null;
@@ -244,7 +245,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         }
         return list;
     }
-
 
     /**
      * 插入 用户可以传入model实现自动插入，也可以重写该方法
@@ -325,6 +325,28 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     @Override
     public Cursor quert(String sql, String[] args) throws Exception {
         return sqLiteDatabase.rawQuery(sql, args);
+    }
+
+    /**
+     * 执行
+     */
+    @Override
+    public void execSQL(String sqlStrin) throws Exception{
+        if (sqlStrin == null || sqlStrin.isEmpty()){
+            return;
+        }
+
+        synchronized (tableName){
+            try{
+                sqLiteDatabase.beginTransaction();
+                sqLiteDatabase.execSQL(sqlStrin);
+                sqLiteDatabase.setTransactionSuccessful();
+            }catch (Exception e){
+                throw e;
+            }finally {
+                sqLiteDatabase.endTransaction();
+            }
+        }
     }
 
 

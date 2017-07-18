@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
 
             User updateU = new User();
             updateU.setName("孙晓宇");
-            updateU.setGrend(80.3f);
+            updateU.setGrend(990.3f);
             updateU.setFlag(false);
 
 
