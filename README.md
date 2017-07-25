@@ -25,8 +25,12 @@ DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创�
      DaoManagerFactory factory = DaoManagerFactory.getInstance(path, name);
      //方法一
      UserDao userDao = factory.getDataHelper(UserDao.class, User.class);  
-     //方法二 自定义表名
-     UserDao userDao = factory.getDataHelper(UserDao.class, User.class, tableName);  
+     
+     //方法二 自定义表名（tableName 或 属性表名 必须有一个有值）
+     UserDao userDao = factory.getDataHelper(UserDao.class, User.class, tableName);
+     
+     //方法三 自定义表名,不使用注解。（列名为 “_属性名称”  （该方法适用于非本身创建的model类））
+     UserDao userDao = factory.getDataHelper(UserDao.class, User.class, tableName, false);
           
  
 ##### 其中:
@@ -34,8 +38,10 @@ DataBaseUtils一款高效及方便使用的数据库框架。可实现自动创�
 path 为自定义数据库保存路径
 
 name 为自定义数据库保存名字
-    
+
 User 为用户的表结构类（user中的属性只支持基本属性及String, 属性类型请使用封装类）
+
+UserDao 为用户实现BaseDao的子类
     
        
         @SxyDBTable("myuser")       
@@ -136,6 +142,8 @@ BaseDao中提供了基本的增、删、改、查、及一些常用的方法，�
 1.0.1 基本版本
 
 1.0.2 增加了支持kotlin
+
+1.0.3 增加了支持没有注解的model，增、删、改 增加了同步锁，用户在外面调用时可以不加同步锁 
    
 
     

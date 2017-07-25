@@ -1,6 +1,7 @@
 package com.sxy.kotlinutilsdemo.utils
 
 import android.graphics.Color
+import android.graphics.drawable.ShapeDrawable
 import android.support.annotation.UiThread
 import android.view.Gravity
 import android.widget.TextView
@@ -8,6 +9,7 @@ import android.widget.Toast
 import com.sunxiaoyu.batabaseutilsdemo.R
 import com.sunxiaoyu.batabaseutilsdemo.application.App
 import org.jetbrains.anko.backgroundResource
+import org.jetbrains.anko.padding
 import org.jetbrains.anko.textColor
 
 /**
@@ -31,10 +33,10 @@ object ToastUtils{
                 textColor = Color.WHITE
                 gravity = Gravity.CENTER
                 backgroundResource = R.drawable.black_circular_view
-//                textSize = App.instance.resources.getDimensionPixelSize(R.dimen.dip_7).toFloat()
-//                padding = App.instance.resources.getDimensionPixelSize(R.dimen.dip_7)
+                padding = textSize.toInt()
             }
         }
+
 
         if (toast == null){
             toast = Toast(App.instance)

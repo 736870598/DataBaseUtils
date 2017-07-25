@@ -1,9 +1,7 @@
 package com.sunxiaoyu.batabaseutilsdemo.retrofitcore;
 
 
-import com.sunxiaoyu.batabaseutilsdemo.application.App;
 import com.sunxiaoyu.batabaseutilsdemo.request.RequestImpl;
-import com.sxy.kotlinutilsdemo.utils.NetWorkUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -16,7 +14,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
  * Created by sunxiaoyu on 2017/7/18.
  */
 
-public class RetrofitRequest {
+public class RetrofitRequestManager {
 
     public static final String BASE_URL = "https://vers.cmfun.cn/OriAppVersion/version/";
 
@@ -29,15 +27,15 @@ public class RetrofitRequest {
 
     //在访问HttpMethods时创建单例
     private static class SingletonHolder{
-        private static final RetrofitRequest INSTANCE = new RetrofitRequest();
+        private static final RetrofitRequestManager INSTANCE = new RetrofitRequestManager();
     }
 
     //获取单例
-    public static RetrofitRequest getRequest(){
+    public static RetrofitRequestManager getManager(){
         return SingletonHolder.INSTANCE;
     }
 
-    private RetrofitRequest(){
+    private RetrofitRequestManager(){
         //手动创建一个OkHttpClient并设置超时时间
         OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
         httpClientBuilder.connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
@@ -56,11 +54,7 @@ public class RetrofitRequest {
         return retrofit.create(service);
     }
 
-    public RequestImpl requestImpl() {
-        if (!NetWorkUtils.INSTANCE.isnetWorkAvailable(App.Companion.getInstance())){
-            throw new RuntimeException("------------");
-        }
+    public RequestImpl getImpl() {
         return requestImpl;
-
     }
 }

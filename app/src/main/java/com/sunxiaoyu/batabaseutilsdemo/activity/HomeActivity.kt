@@ -4,7 +4,7 @@ import android.Manifest
 import android.os.Bundle
 import com.sunxiaoyu.batabaseutilsdemo.R
 import com.sunxiaoyu.batabaseutilsdemo.dao.VersionDao
-import com.sunxiaoyu.batabaseutilsdemo.retrofitcore.RetrofitRequest
+import com.sunxiaoyu.batabaseutilsdemo.retrofitcore.RetrofitRequestManager
 import com.sxy.kotlinutilsdemo.utils.PermissionsManager
 import com.sxy.kotlinutilsdemo.utils.ToastUtils
 import com.sxy.retrofitrxjavakotlindemo.resultmodel.VersionModel
@@ -35,7 +35,7 @@ class HomeActivity : BaseActivity(){
     //进行网络请求
     private fun getMovie() {
 
-        val disposable = RetrofitRequest.getRequest().requestImpl().getLastVersion("DIDIAO_APP")
+        val disposable = RetrofitRequestManager.getManager().impl.getLastVersion("DIDIAO_APP")
                 .subscribeOn(Schedulers.io())
                 .map {
                     val dao = app.factory.getDataHelper(VersionDao::class.java, VersionModel::class.java)

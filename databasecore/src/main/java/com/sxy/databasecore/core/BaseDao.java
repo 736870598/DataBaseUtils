@@ -30,12 +30,12 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 初始化
      * @throws Exception 异常
      */
-    synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase, String tableName) throws Exception{
+    synchronized void init(Class<T> entity, SQLiteDatabase sqLiteDatabase, String tableName, boolean userAnn) throws Exception{
         if(!isInit){
             isInit = true;
             this.entityClass = entity;
             this.sqLiteDatabase = sqLiteDatabase;
-            sqLiteDatabase.execSQL(getCreateTableStr(tableName));
+            sqLiteDatabase.execSQL(getCreateTableStr(tableName, userAnn));
         }
     }
 
@@ -43,7 +43,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 得到创建表的语句
      * 根据注解获取表名及列名
      */
-    private String getCreateTableStr(String _tableName) throws Exception{
+    private String getCreateTableStr(String _tableName, boolean userAnn) throws Exception{
 
         //得到表名
         if (_tableName == null || _tableName.isEmpty()){
@@ -58,17 +58,22 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         Field[] fields = entityClass.getDeclaredFields();
         if (fields != null){
             for (Field field : fields) {
-                //如果field不是创建的，直接跳过
+
+                //如果field是系统自动创建的，直接跳过
                 if(field.isSynthetic()){
                     continue;
                 }
 
-                //如果没有设置DBField，直接跳过
-                if (!field.isAnnotationPresent(SxyDBField.class)) {
-                    continue;
+                String lineName = "_" + field.getName();
+                if (userAnn){
+                    //如果没有设置DBField，直接跳过
+                    if (field.isAnnotationPresent(SxyDBField.class)) {
+                        lineName = field.getAnnotation(SxyDBField.class).value();
+                    }else{
+                        continue;
+                    }
                 }
 
-                String lineName = field.getAnnotation(SxyDBField.class).value();
                 sql.append(" , ").append(lineName).append(" ").append(getSqlLiteDBType(field.getType()));
 
                 //将属性名 和 表列名对应关系保存在cacheMap中。
@@ -187,29 +192,39 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         T model = entityClass.newInstance();
         Field[] fields = entityClass.getDeclaredFields();
         for (Field field : fields) {
-            field.setAccessible(true);
 
-            int columnIndex = curosr.getColumnIndex(cacheMap.get(field.getName()));
-            Class type = field.getType();
+            //如果field是系统自动创建的，直接跳过
+            if(field.isSynthetic()){
+                continue;
+            }
+
+            field.setAccessible(true);
+            String column = cacheMap.get(field.getName());
+            if(column == null || column.isEmpty()){
+                continue;
+            }
+
+    int columnIndex = curosr.getColumnIndex(column);
+    Class type = field.getType();
 
             if (type.equals(String.class)) {
-                field.set(model, curosr.getString(columnIndex));
-            }else if( type.equals(boolean.class) || type.equals(Boolean.class) ){
-                field.set(model, curosr.getString(columnIndex).equalsIgnoreCase("true"));
-            }else if( type.equals(int.class) || type.equals(Integer.class) ){
-                field.set(model, curosr.getInt(columnIndex));
-            }else if( type.equals(long.class) || type.equals(Long.class) ){
-                field.set(model, curosr.getLong(columnIndex));
-            }else if( type.equals(float.class) || type.equals(Float.class) ){
-                field.set(model, curosr.getFloat(columnIndex));
-            }else if( type.equals(double.class) || type.equals(Double.class) ){
-                field.set(model, curosr.getDouble(columnIndex));
-            }else if( type.equals(short.class) || type.equals(Short.class) ){
-                field.set(model, curosr.getShort(columnIndex));
-            }
-        }
-        return model;
+        field.set(model, curosr.getString(columnIndex));
+    }else if( type.equals(boolean.class) || type.equals(Boolean.class) ){
+        field.set(model, curosr.getString(columnIndex).equalsIgnoreCase("true"));
+    }else if( type.equals(int.class) || type.equals(Integer.class) ){
+        field.set(model, curosr.getInt(columnIndex));
+    }else if( type.equals(long.class) || type.equals(Long.class) ){
+        field.set(model, curosr.getLong(columnIndex));
+    }else if( type.equals(float.class) || type.equals(Float.class) ){
+        field.set(model, curosr.getFloat(columnIndex));
+    }else if( type.equals(double.class) || type.equals(Double.class) ){
+        field.set(model, curosr.getDouble(columnIndex));
+    }else if( type.equals(short.class) || type.equals(Short.class) ){
+        field.set(model, curosr.getShort(columnIndex));
     }
+}
+        return model;
+                }
 
     /**
      * 搜索表中所有字段
@@ -312,7 +327,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 执行
      */
     @Override
-    public void execSQL(String sqlStrin) throws Exception{
+    public void execSQL(String sqlStrin, Object[] objects) throws Exception{
         synchronized(this){
             if (sqlStrin == null || sqlStrin.isEmpty()){
                 return;
@@ -320,7 +335,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
 
             try{
                 sqLiteDatabase.beginTransaction();
-                sqLiteDatabase.execSQL(sqlStrin);
+                sqLiteDatabase.execSQL(sqlStrin, objects);
                 sqLiteDatabase.setTransactionSuccessful();
             }finally {
                 sqLiteDatabase.endTransaction();

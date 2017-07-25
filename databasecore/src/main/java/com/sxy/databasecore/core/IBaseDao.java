@@ -50,7 +50,7 @@ public interface IBaseDao<T> {
     /**
      *  执行
      */
-    void execSQL(String string) throws Exception;
+    void execSQL(String string, Object[] objects) throws Exception;
 
     /**
      * 是否已经存在

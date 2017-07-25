@@ -68,15 +68,33 @@ public class DaoManagerFactory {
 
     /**
      * 工厂模式，创建BaseDao
-     * @throws Exception
+     * @param clazz           子创建BaseDao
+     * @param entityClazz     数据类
      */
     public  <T extends BaseDao<M>, M> T getDataHelper(Class<T> clazz, Class<M> entityClazz) throws Exception{
         return getDataHelper(clazz, entityClazz, null);
     }
 
-    public synchronized <T extends BaseDao<M>, M> T getDataHelper(Class<T> clazz, Class<M> entityClazz, String tableName) throws Exception{
+    /**
+     * 工厂模式，创建BaseDao
+     * @param clazz           子创建BaseDao
+     * @param entityClazz     数据类
+     * @param tableName       表名（如果设置该值，则注解表名不生效, 如果没有设置该字段而且没有注解表名，则可能报错）
+     */
+    public <T extends BaseDao<M>, M> T getDataHelper(Class<T> clazz, Class<M> entityClazz, String tableName) throws Exception{
+        return getDataHelper(clazz, entityClazz, tableName, true);
+    }
+
+    /**
+     * 工厂模式，创建BaseDao
+     * @param clazz           子创建BaseDao
+     * @param entityClazz     数据类
+     * @param tableName       表名（如果设置该值，则注解表名不生效，如果没有设置该字段而且没有注解表名，则可能报错）
+     * @param useAnnotation   是否使用注解（如果不使用注解，字段名则使用“ _属性名 ”）
+     */
+    public synchronized <T extends BaseDao<M>, M> T getDataHelper(Class<T> clazz, Class<M> entityClazz, String tableName, boolean useAnnotation) throws Exception{
         BaseDao baseDao = clazz.newInstance();
-        baseDao.init(entityClazz, sqLiteDatabase, tableName);
+        baseDao.init(entityClazz, sqLiteDatabase, tableName, useAnnotation);
         return (T) baseDao;
     }
 }
