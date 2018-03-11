@@ -45,7 +45,7 @@ public interface IBaseDao<T> {
      * 查找
      * @return Cursor
      */
-    Cursor quert(String sql, String[] strs) throws Exception;
+    List<T> quert(String sql, String[] strs) throws Exception;
 
     /**
      *  执行

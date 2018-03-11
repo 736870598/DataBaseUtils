@@ -43,8 +43,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 得到创建表的语句
      * 根据注解获取表名及列名
      */
-    private String getCreateTableStr(String _tableName, boolean userAnn) throws Exception{
-
+    private String  getCreateTableStr(String _tableName, boolean userAnn) throws Exception{
         //得到表名
         if (_tableName == null || _tableName.isEmpty()){
             this.tableName = entityClass.getAnnotation(SxyDBTable.class).value();
@@ -98,7 +97,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         if( type.equals(char.class) ){
             return "CHAR";
         }
-        if( type.equals(byte.class) || type.equals(Byte.class) ){
+        if( type.equals(byte[].class) || type.equals(Byte[].class) ){
             return "BLOB";
         }
         if( type.equals(int.class) || type.equals(Integer.class) ){
@@ -182,12 +181,37 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
         return tableName;
     }
 
+
+
+    public List<T> cursor2ModelList(Cursor cursor){
+        List<T> list = null;
+        if (cursor != null){
+            list = new ArrayList<>();
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()){
+                try {
+                    T t = cursor2Model(cursor);
+                    if(t != null){
+                        if(list == null)
+                            list = new ArrayList<>();
+
+                        list.add(t);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                cursor.moveToNext();
+            }
+        }
+        return list;
+    }
+
     /**
      * 通过cursor返回model类
      * @throws Exception 异常
      */
     @Override
-    public T cursor2Model(Cursor curosr) throws Exception {
+    public T cursor2Model(Cursor cursor) throws Exception {
 
         T model = entityClass.newInstance();
         Field[] fields = entityClass.getDeclaredFields();
@@ -204,27 +228,29 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
                 continue;
             }
 
-    int columnIndex = curosr.getColumnIndex(column);
-    Class type = field.getType();
+            int columnIndex = cursor.getColumnIndex(column);
+            Class type = field.getType();
 
             if (type.equals(String.class)) {
-        field.set(model, curosr.getString(columnIndex));
-    }else if( type.equals(boolean.class) || type.equals(Boolean.class) ){
-        field.set(model, curosr.getString(columnIndex).equalsIgnoreCase("true"));
-    }else if( type.equals(int.class) || type.equals(Integer.class) ){
-        field.set(model, curosr.getInt(columnIndex));
-    }else if( type.equals(long.class) || type.equals(Long.class) ){
-        field.set(model, curosr.getLong(columnIndex));
-    }else if( type.equals(float.class) || type.equals(Float.class) ){
-        field.set(model, curosr.getFloat(columnIndex));
-    }else if( type.equals(double.class) || type.equals(Double.class) ){
-        field.set(model, curosr.getDouble(columnIndex));
-    }else if( type.equals(short.class) || type.equals(Short.class) ){
-        field.set(model, curosr.getShort(columnIndex));
-    }
-}
+                field.set(model, cursor.getString(columnIndex));
+            }else if( type.equals(boolean.class) || type.equals(Boolean.class) ){
+                field.set(model, cursor.getString(columnIndex).equalsIgnoreCase("true"));
+            }else if( type.equals(int.class) || type.equals(Integer.class) ){
+                field.set(model, cursor.getInt(columnIndex));
+            }else if( type.equals(long.class) || type.equals(Long.class) ){
+                field.set(model, cursor.getLong(columnIndex));
+            }else if( type.equals(float.class) || type.equals(Float.class) ){
+                field.set(model, cursor.getFloat(columnIndex));
+            }else if( type.equals(double.class) || type.equals(Double.class) ){
+                field.set(model, cursor.getDouble(columnIndex));
+            }else if( type.equals(short.class) || type.equals(Short.class) ){
+                field.set(model, cursor.getShort(columnIndex));
+            }else if( type.equals(byte[].class) || type.equals(Byte[].class) ){
+                field.set(model, cursor.getBlob(columnIndex));
+            }
+        }
         return model;
-                }
+    }
 
     /**
      * 搜索表中所有字段
@@ -233,31 +259,8 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public List<T> getAllInfo() throws Exception{
-        Cursor cursor = null;
-        List<T> list = null;
         String sql = "SELECT * FROM " + tableName;
-        try {
-            cursor = quert(sql, null);
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()){
-                try {
-                    T t = cursor2Model(cursor);
-                    if(t != null){
-                        if(list == null)
-                            list = new ArrayList<>();
-
-                        list.add(t);
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                cursor.moveToNext();
-            }
-            return list;
-        }finally {
-            if(cursor != null)
-                cursor.close();
-        }
+        return quert(sql, null);
     }
 
     /**
@@ -268,7 +271,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public Long insert(T entity) throws Exception{
-        synchronized(this){
             try {
                 sqLiteDatabase.beginTransaction();
                 Long result = sqLiteDatabase.insert(tableName, "_id", getContentValues(entity));
@@ -277,7 +279,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
             }finally {
                 sqLiteDatabase.endTransaction();
             }
-        }
     }
 
     /**
@@ -289,7 +290,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public int update(T entity, T where) throws Exception {
-        synchronized(this){
             try{
                 sqLiteDatabase.beginTransaction();
                 Condition condition = new Condition(getContentValues(where));
@@ -299,7 +299,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
             }finally {
                 sqLiteDatabase.endTransaction();
             }
-        }
     }
 
     /**
@@ -310,7 +309,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      */
     @Override
     public int delete(T where) throws Exception {
-        synchronized(this){
             try{
                 sqLiteDatabase.beginTransaction();
                 Condition condition = new Condition(getContentValues(where));
@@ -320,7 +318,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
             }finally {
                 sqLiteDatabase.endTransaction();
             }
-        }
     }
 
     /**
@@ -347,12 +344,19 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
      * 查找    （由于查找的要求及返回值各有不同，这里提供一个简单的查找方法，可以通过getAllInfo()方法查找表所有的字段）
      * @param sql   查找语句
      * @param args  查找值
-     * @return  Cursor（使用完记得close）
+     * @return  List（使用完记得close）
      * @throws Exception 异常
      */
     @Override
-    public Cursor quert(String sql, String[] args) throws Exception {
-        return sqLiteDatabase.rawQuery(sql, args);
+    public List<T> quert(String sql, String[] args) throws Exception {
+        Cursor cursor = null;
+        try {
+            cursor = sqLiteDatabase.rawQuery(sql, args);
+            return cursor2ModelList(cursor);
+        }finally {
+            if(cursor != null)
+                cursor.close();
+        }
     }
 
     /**
