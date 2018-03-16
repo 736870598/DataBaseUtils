@@ -18,7 +18,7 @@ import java.util.Map;
  * BaseDao抽象类
  * Created by sunxiaoyu on 2017/1/13.
  */
-public abstract class BaseDao<T> implements IBaseDao<T> {
+public class BaseDao<T> implements IBaseDao<T> {
 
     private SQLiteDatabase sqLiteDatabase;
     private boolean isInit;
@@ -292,8 +292,14 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     public int update(T entity, T where) throws Exception {
             try{
                 sqLiteDatabase.beginTransaction();
-                Condition condition = new Condition(getContentValues(where));
-                int result = sqLiteDatabase.update(tableName, getContentValues(entity), condition.whereClause, condition.whereArgs);
+                int result;
+                if (where == null){
+                    result = sqLiteDatabase.update(tableName, getContentValues(entity), null,null);
+                }else{
+                    Condition condition = new Condition(getContentValues(where));
+                    result = sqLiteDatabase.update(tableName, getContentValues(entity), condition.whereClause, condition.whereArgs);
+                }
+
                 sqLiteDatabase.setTransactionSuccessful();
                 return result;
             }finally {
