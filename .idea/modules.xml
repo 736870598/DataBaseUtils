@@ -4,11 +4,8 @@
     <modules>
       <module fileurl="file://D:\as_space\github_space\DataBaseUtils\DataBaseUtils\BataBaseUtilsDemo.iml" filepath="D:\as_space\github_space\DataBaseUtils\DataBaseUtils\BataBaseUtilsDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/DataBaseUtils.iml" filepath="$PROJECT_DIR$/DataBaseUtils.iml" />
-      <module fileurl="file://D:\as_space\github_space\DataBaseUtils\DataBaseUtils\DataBaseUtils.iml" filepath="D:\as_space\github_space\DataBaseUtils\DataBaseUtils\DataBaseUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://D:\as_space\github_space\DataBaseUtils\DataBaseUtils\app\app.iml" filepath="D:\as_space\github_space\DataBaseUtils\DataBaseUtils\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/databasecore/databasecore.iml" filepath="$PROJECT_DIR$/databasecore/databasecore.iml" />
-      <module fileurl="file://D:\as_space\github_space\DataBaseUtils\DataBaseUtils\databasecore\databasecore.iml" filepath="D:\as_space\github_space\DataBaseUtils\DataBaseUtils\databasecore\databasecore.iml" />
     </modules>
   </component>
 </project>
